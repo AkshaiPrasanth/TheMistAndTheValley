@@ -1,6 +1,8 @@
 /* ==========================================================================
-   THE MIST & THE VALLEY — Firebase Firestore & Analytics SDK Integration
-   Project ID: the-mist-and-the-valley
+   THE MIST & THE VALLEY — Firebase Firestore Integration
+   Project Name: TheMistandthevalleyExport
+   Project ID: themistandthevalleyexport
+   Project Number: 116366730464
    Collection: 'sourcing_enquiries'
    ========================================================================== */
 
@@ -13,14 +15,14 @@ import {
   serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// Production Firebase Configuration for The Mist And The Valley
+// Production Firebase Configuration for Project 'themistandthevalleyexport'
 const firebaseConfig = {
   apiKey: "AIzaSyBkkFznlNYFeqTnaHoClC7GSqdBrvUwSxw",
-  authDomain: "the-mist-and-the-valley.firebaseapp.com",
-  projectId: "the-mist-and-the-valley",
-  storageBucket: "the-mist-and-the-valley.firebasestorage.app",
-  messagingSenderId: "168432064547",
-  appId: "1:168432064547:web:26cac38021aae318b67996",
+  authDomain: "themistandthevalleyexport.firebaseapp.com",
+  projectId: "themistandthevalleyexport",
+  storageBucket: "themistandthevalleyexport.firebasestorage.app",
+  messagingSenderId: "116366730464",
+  appId: "1:116366730464:web:26cac38021aae318b67996",
   measurementId: "G-D73R9T3FSD"
 };
 
@@ -39,7 +41,7 @@ try {
       console.log("Analytics notice:", e);
     }
   }
-  console.log("🔥 Firebase initialized successfully for Project: the-mist-and-the-valley");
+  console.log("🔥 Firebase initialized for Project: themistandthevalleyexport");
 } catch (error) {
   console.error("🔥 Firebase initialization error:", error);
 }
@@ -71,13 +73,13 @@ export async function storeEnquiryInFirestore(enquiryData) {
     submittedAt: serverTimestamp ? serverTimestamp() : new Date()
   };
 
-  console.log("🔥 [FIREBASE FIRESTORE] Attempting write to collection 'sourcing_enquiries':", payload);
+  console.log("🔥 [FIREBASE FIRESTORE] Saving to collection 'sourcing_enquiries':", payload);
 
   // Backup to localStorage for local durability
   saveToLocalStorageLog(payload);
 
   if (!db) {
-    console.error("🔥 Firestore DB object is null. Check firebase setup.");
+    console.error("🔥 Firestore DB object is null.");
     return { success: false, mode: "no_db" };
   }
 
@@ -88,13 +90,6 @@ export async function storeEnquiryInFirestore(enquiryData) {
     return { success: true, docId: docRef.id, mode: "firestore" };
   } catch (err) {
     console.error("🔥 [FIREBASE ERROR] Could not write to Firestore database:", err);
-    
-    if (err.code === 'permission-denied') {
-      console.warn("👉 Action Required: Open Firebase Console -> Firestore Database -> Rules tab, and set rule: allow create: if true;");
-    } else if (err.code === 'not-found' || err.message.includes('NOT_FOUND')) {
-      console.warn("👉 Action Required: Open Firebase Console -> Build -> Firestore Database, and click 'Create Database'.");
-    }
-
     return { success: false, error: err.message, mode: "error" };
   }
 }
