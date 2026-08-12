@@ -32,13 +32,16 @@ try {
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
   
-  // Analytics initialization (supported in browser environments)
   if (typeof window !== 'undefined') {
-    analytics = getAnalytics(app);
+    try {
+      analytics = getAnalytics(app);
+    } catch (e) {
+      console.log("Analytics notice:", e);
+    }
   }
-  console.log("Firebase initialized successfully for Project: the-mist-and-the-valley");
+  console.log("🔥 Firebase initialized successfully for Project: the-mist-and-the-valley");
 } catch (error) {
-  console.warn("Firebase initialization notice:", error);
+  console.error("🔥 Firebase initialization error:", error);
 }
 
 /**
@@ -52,7 +55,6 @@ export async function storeEnquiryInFirestore(enquiryData) {
     companyName: enquiryData.company_name || "",
     businessEmail: enquiryData.business_email || "hello@themistandthevalley.com",
     country: enquiryData.country || "",
-    phone: enquiryData.phone || "",
     productRequired: enquiryData.product_required || "",
     quantityRequired: enquiryData.quantity_required || "",
     unit: enquiryData.unit || "N/A",
@@ -63,27 +65,37 @@ export async function storeEnquiryInFirestore(enquiryData) {
     message: enquiryData.message || "",
     formSource: enquiryData.form_source || "Web B2B Enquiry",
     contactEmail: "hello@themistandthevalley.com",
+    registeredLocation: "Ooty, Tamil Nadu, India",
     status: "PENDING_REVIEW",
     createdAt: new Date().toISOString(),
     submittedAt: serverTimestamp ? serverTimestamp() : new Date()
   };
 
-  console.log("[FIREBASE FIRESTORE] Saving Sourcing Enquiry to Project 'the-mist-and-the-valley':", payload);
+  console.log("🔥 [FIREBASE FIRESTORE] Attempting write to collection 'sourcing_enquiries':", payload);
 
   // Backup to localStorage for local durability
   saveToLocalStorageLog(payload);
 
   if (!db) {
-    return { success: true, docId: "local_" + Date.now(), mode: "local_backup" };
+    console.error("🔥 Firestore DB object is null. Check firebase setup.");
+    return { success: false, mode: "no_db" };
   }
 
   try {
-    const docRef = await addDoc(collection(db, "sourcing_enquiries"), payload);
-    console.log("[FIREBASE FIRESTORE] Successfully written to Firestore with Document ID:", docRef.id);
+    const colRef = collection(db, "sourcing_enquiries");
+    const docRef = await addDoc(colRef, payload);
+    console.log("🔥 [FIREBASE SUCCESS] Document written to Firestore with ID:", docRef.id);
     return { success: true, docId: docRef.id, mode: "firestore" };
   } catch (err) {
-    console.warn("[FIREBASE FIRESTORE] Document write notice (saved locally as backup):", err);
-    return { success: true, docId: "local_" + Date.now(), mode: "local_saved" };
+    console.error("🔥 [FIREBASE ERROR] Could not write to Firestore database:", err);
+    
+    if (err.code === 'permission-denied') {
+      console.warn("👉 Action Required: Open Firebase Console -> Firestore Database -> Rules tab, and set rule: allow create: if true;");
+    } else if (err.code === 'not-found' || err.message.includes('NOT_FOUND')) {
+      console.warn("👉 Action Required: Open Firebase Console -> Build -> Firestore Database, and click 'Create Database'.");
+    }
+
+    return { success: false, error: err.message, mode: "error" };
   }
 }
 
