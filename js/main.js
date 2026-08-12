@@ -217,7 +217,7 @@ function initFormHandler() {
       
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerText = 'SAVING TO FIREBASE DB...';
+        submitBtn.innerText = 'SAVING...';
       }
 
       const formDataObj = {};
@@ -228,13 +228,13 @@ function initFormHandler() {
 
       formDataObj.form_source = form.id === 'modal-enquiry-form' ? 'Quick Quote Modal' : 'Main Export Enquiry Form';
 
-      // Call Firestore DB store function
-      const result = await storeEnquiryInFirestore(formDataObj);
+      // Call Firestore DB store function silently in background
+      await storeEnquiryInFirestore(formDataObj);
 
       const company = formDataObj.company_name || 'Valued Buyer';
       const product = formDataObj.product_required || 'Sourcing Requirement';
 
-      showSubmissionSuccess(company, product, result.docId);
+      showSubmissionSuccess(company, product);
       form.reset();
       
       if (submitBtn) {
@@ -251,7 +251,7 @@ function initFormHandler() {
   });
 }
 
-function showSubmissionSuccess(company, product, docId) {
+function showSubmissionSuccess(company, product) {
   const alertBox = document.createElement('div');
   alertBox.style.cssText = `
     position: fixed;
@@ -269,10 +269,10 @@ function showSubmissionSuccess(company, product, docId) {
   `;
   
   alertBox.innerHTML = `
-    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #D8C7A5; margin-bottom: 6px; font-weight: 700;">FIREBASE DB RECORDED</div>
+    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #D8C7A5; margin-bottom: 6px; font-weight: 700;">REQUIREMENT SUBMITTED</div>
     <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 22px; margin-bottom: 8px; color: #FFF;">Thank You, ${company}</h4>
     <p style="font-size: 14px; color: rgba(255,255,255,0.88); line-height: 1.5; margin: 0;">
-      Your requirement for <strong>${product}</strong> has been logged in our Firebase database (Ref: ${docId}). Our team will review your specifications and contact you at <strong>hello@themistandthevalley.com</strong>.
+      Your sourcing requirement for <strong>${product}</strong> has been received by our export desk. Our team will review your specifications and contact your business email directly.
     </p>
   `;
 
